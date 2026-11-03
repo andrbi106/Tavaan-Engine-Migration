@@ -17,22 +17,27 @@ final class MigrationScenarioTest extends TestCase
     {
         // Scenario T-01
 $m = new Migrator();
-        $m->getRepository()->add(new class("1") extends Migration {
+        $mig = new class("1") extends Migration {
             public function up(): void {}
             public function down(): void {}
-        });
+        };
+        $mig->version = "1";
+        $m->getRepository()->add($mig);
         $executed = $m->run();
         $this->assertCount(1, $executed);
+        $this->assertSame("1", $executed[0]);
     }
 
     public function test_t02_migrator_status(): void
     {
         // Scenario T-02
 $m = new Migrator();
-        $m->getRepository()->add(new class("1") extends Migration {
+        $mig = new class("1") extends Migration {
             public function up(): void {}
             public function down(): void {}
-        });
+        };
+        $mig->version = "1";
+        $m->getRepository()->add($mig);
         $m->run();
         $status = $m->status();
         $this->assertCount(1, $status["ran"]);
