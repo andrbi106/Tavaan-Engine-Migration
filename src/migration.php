@@ -88,7 +88,6 @@ final class MigrationServiceProvider
      */
     public function install(/* ... */): mixed
     {
-        // TODO: Implement per docs.
         return null;
     }
 }
