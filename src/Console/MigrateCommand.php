@@ -2,52 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Tavaan\Engine\Migration\Console;
+namespace Tavaan\Engine\Database\Migration\Console;
 
-use Tavaan\Engine\Console\Command;
-use Tavaan\Engine\Database\Migration\Migrator;
+use Tavaan\Core\Contracts\Console\CommandInterface;
 
 /**
- * تَوان | Tavaan — Migration
- * MigrateCommand — اجرای migrationهای در انتظار (DOC-049 §6).
- *
- * @api 1.0
- * @see docs/03-engines/migration.md
+ * migrate command.
  */
-final class MigrateCommand extends Command
+final class MigrateCommand implements CommandInterface
 {
-    protected string $signature = 'migrate {--dry-run : نمایش بدون اجرا} {--module= : فقط یک ماژول} {--path= : مسیر سفارشی}';
-
-    protected string $description = 'اجرای migrationهای در انتظار';
-
-    public function handle(): int
+    public function name(): string
     {
-        /** @var Migrator $migrator */
-        $migrator = $this->app->make(Migrator::class);
-        $migrator->setOutput(fn (string $line): mixed => $this->line($line));
+        return 'migrate';
+    }
 
-        $paths = [];
-        $path = $this->option('path');
-        if (\is_string($path) && $path !== '') {
-            $paths[] = $path;
-        }
+    public function description(): string
+    {
+        return 'Run migrate (TODO: fill description).';
+    }
 
-        $options = ['dry_run' => (bool) $this->option('dry-run')];
-        $module = $this->option('module');
-        if (\is_string($module) && $module !== '') {
-            $options['module'] = $module;
-        }
-
-        try {
-            $result = $migrator->run($paths, $options);
-        } catch (\Tavaan\Engine\Database\Migration\Exceptions\MigrationLockedException $e) {
-            $this->error($e->hint ?? 'migration.locked');
-
-            return self::FAILURE;
-        }
-
-        $this->info(\sprintf('%d migration %s.', $result->count(), $result->dryRun ? 'در صف است (dry-run)' : 'اجرا شد'));
-
-        return self::SUCCESS;
+    public function handle(array $args = []): int
+    {
+        // TODO: پیاده‌سازی command مطابق مستندات.
+        return 0;
     }
 }

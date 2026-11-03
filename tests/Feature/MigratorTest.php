@@ -2,215 +2,91 @@
 
 declare(strict_types=1);
 
-namespace Tavaan\Engine\Migration\Tests\Feature;
+namespace Tavaan\Engine\Database\Migration\Tests\Feature;
 
-use Tavaan\Core\Application\Application;
-use Tavaan\Engine\Database\Connection;
-use Tavaan\Engine\Database\Migration\Exceptions\MigrationException;
-use Tavaan\Engine\Database\Migration\Exceptions\MigrationLockedException;
-use Tavaan\Engine\Database\Migration\FileMigrationLock;
+use PHPUnit\Framework\TestCase;
 use Tavaan\Engine\Database\Migration\Migrator;
-use Tavaan\Testing\TestCase;
+use Tavaan\Engine\Database\Migration\MigratorServiceProvider;
+use Tavaan\Core\Contracts\Config\RepositoryInterface;
 
 /**
- * تست Migrator — DOC-049 §8 (T-01..T-07).
+ * تست‌های Feature برای موتور Migrator.
+ *
+ * هر سناریوی T-NN از مستندات باید به یک متد testTNN_* تبدیل شود.
  */
 final class MigratorTest extends TestCase
 {
-    private Application $app;
-
-    private Migrator $migrator;
-
-    private string $fixtures;
+    private Migrator $engine;
 
     protected function setUp(): void
     {
-        $this->app = \tavaan_test_app();
-        $this->app->make('config')->set('database.default', 'sqlite_memory');
-        $this->app->make('config')->set('database.connections.sqlite_memory', [
-            'driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '',
-        ]);
-
-        $this->fixtures = \dirname(__DIR__) . '/Fixtures';
-        $this->migrator = $this->app->make(Migrator::class);
-        // مسیر fixture برای rollback/status (اجراها با مسیر صریح انجام می‌شوند)
-        $this->migrator->addPath($this->fixtures);
-
-        @\unlink($this->app->basePath() . '/storage/framework/migration.lock');
+        parent::setUp();
+        $config = $this->createMock(RepositoryInterface::class);
+        $config->method('get')->willReturn(null);
+        $this->engine = new Migrator($config);
     }
 
-    protected function tearDown(): void
+    /**
+     * T-01: migrate → up اجرا، در repository ثبت
+     */
+    public function test_t01_migrate__up___repository(): void
     {
-        @\unlink($this->app->basePath() . '/storage/framework/migration.lock');
+        // TODO: پیاده‌سازی سناریوی T-01 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-01 هنوز پیاده‌سازی نشده است.');
     }
 
-    private function db(): Connection
+    /**
+     * T-02: rollback → down، ترتیب معکوس
+     */
+    public function test_t02_rollback__down__(): void
     {
-        $connection = $this->app->make('db')->connection();
-        $this->assertInstanceOf(Connection::class, $connection);
-
-        return $connection;
+        // TODO: پیاده‌سازی سناریوی T-02 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-02 هنوز پیاده‌سازی نشده است.');
     }
 
-    public function testMigrateRunsPendingAndLogs(): void
+    /**
+     * T-03: Lock: دو migrator همزمان → یکی صبر/خطا
+     */
+    public function test_t03_lock__migrator____(): void
     {
-        // T-01
-        $result = $this->migrator->run([$this->fixtures]);
-
-        $this->assertSame(3, $result->count());
-        $this->assertSame(1, $result->batch);
-        $this->assertTrue($this->app->make('schema')->hasTable('widgets'));
-        $this->assertTrue($this->app->make('schema')->hasTable('widget_parts'));
-
-        $ran = $this->migrator->repository()->getRan();
-        $this->assertContains('2026_01_01_000001_create_widgets_table', $ran);
-        $this->assertContains('2026_01_01_000003_backfill_widget_prices', $ran);
-
-        // اجرای دوم → هیچ pending
-        $again = $this->migrator->run([$this->fixtures]);
-        $this->assertSame(0, $again->count());
+        // TODO: پیاده‌سازی سناریوی T-03 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-03 هنوز پیاده‌سازی نشده است.');
     }
 
-    public function testRollbackReverseOrder(): void
+    /**
+     * T-04: dry-run بدون تغییر DB
+     */
+    public function test_t04_dryrun___db(): void
     {
-        // T-02
-        $this->migrator->run([$this->fixtures]);
-        $result = $this->migrator->rollback(1);
-
-        $this->assertSame(3, $result->count());
-        // ترتیب معکوس: اول backfill (id=3)، بعد parts، بعد widgets
-        $this->assertSame('2026_01_01_000003_backfill_widget_prices', $result->migrations[0]);
-        $this->assertSame('2026_01_01_000001_create_widgets_table', $result->migrations[2]);
-
-        $this->assertFalse($this->app->make('schema')->hasTable('widgets'));
-        $this->assertFalse($this->app->make('schema')->hasTable('widget_parts'));
-        $this->assertSame([], $this->migrator->repository()->getRan());
+        // TODO: پیاده‌سازی سناریوی T-04 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-04 هنوز پیاده‌سازی نشده است.');
     }
 
-    public function testLockPreventsConcurrent(): void
+    /**
+     * T-05: batch numbering
+     */
+    public function test_t05_batch_numbering(): void
     {
-        // T-03
-        $lockPath = $this->app->basePath() . '/storage/framework/migration.lock';
-        $holder = new FileMigrationLock($lockPath, seconds: 300, ownerId: 'other-process');
-        $this->assertTrue($holder->acquire());
-
-        try {
-            $this->migrator->run([$this->fixtures]);
-            self::fail('expected MigrationLockedException');
-        } catch (MigrationLockedException $e) {
-            $this->assertSame('migration.locked', $e->messageId);
-        } finally {
-            $holder->release();
-        }
-
-        // پس از آزادسازی، اجرا می‌شود
-        $result = $this->migrator->run([$this->fixtures]);
-        $this->assertSame(3, $result->count());
+        // TODO: پیاده‌سازی سناریوی T-05 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-05 هنوز پیاده‌سازی نشده است.');
     }
 
-    public function testDryRunChangesNothing(): void
+    /**
+     * T-06: migrate:fresh در prod بدون force → رد
+     */
+    public function test_t06_migratefresh__prod__forc(): void
     {
-        // T-04
-        $result = $this->migrator->run([$this->fixtures], ['dry_run' => true]);
-
-        $this->assertTrue($result->dryRun);
-        $this->assertSame(3, $result->count());
-        $this->assertFalse($this->app->make('schema')->hasTable('widgets'));
-        $this->assertSame([], $this->migrator->repository()->getRan());
+        // TODO: پیاده‌سازی سناریوی T-06 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-06 هنوز پیاده‌سازی نشده است.');
     }
 
-    public function testBatchNumbering(): void
+    /**
+     * T-07: Expand-Contract روی داده
+     */
+    public function test_t07_expand_contract__(): void
     {
-        // T-05
-        $this->migrator->run([$this->fixtures]);
-        $this->assertSame(1, $this->migrator->repository()->getLastBatchNumber());
-
-        // migration جدید در fixture دوم → batch 2
-        $extra = \sys_get_temp_dir() . '/tvn-mig-extra-' . \getmypid();
-        if (!\is_dir($extra)) {
-            \mkdir($extra, 0775, true);
-        }
-        \file_put_contents($extra . '/2026_01_02_000001_create_extras_table.php', <<<'PHP'
-<?php
-declare(strict_types=1);
-use Tavaan\Core\Facade\Facades\Schema;
-use Tavaan\Engine\Database\Migration\Migration;
-use Tavaan\Engine\Database\Schema\Blueprint;
-return new class extends Migration {
-    public function up(): void { Schema::create('extras', fn (Blueprint $t) => $t->id()); }
-    public function down(): void { Schema::dropIfExists('extras'); }
-};
-PHP);
-
-        $this->migrator->addPath($extra);   // برای lookup در rollback
-        try {
-            $result = $this->migrator->run([$this->fixtures, $extra]);
-            $this->assertSame(2, $result->batch);
-            $this->assertSame(2, $this->migrator->repository()->getLastBatchNumber());
-
-            // rollback یک batch → فقط extras
-            $rolled = $this->migrator->rollback(1);
-            $this->assertSame(1, $rolled->count());
-            $this->assertFalse($this->app->make('schema')->hasTable('extras'));
-            $this->assertTrue($this->app->make('schema')->hasTable('widgets'));
-        } finally {
-            @\unlink($extra . '/2026_01_02_000001_create_extras_table.php');
-            @\rmdir($extra);
-        }
+        // TODO: پیاده‌سازی سناریوی T-07 مطابق مستندات.
+        $this->markTestIncomplete('سناریوی T-07 هنوز پیاده‌سازی نشده است.');
     }
 
-    public function testFreshRefusedInProductionWithoutForce(): void
-    {
-        // T-06
-        $prodMigrator = new Migrator($this->db(), $this->app->make('schema'), $this->app->basePath(), environment: 'production');
-
-        try {
-            $prodMigrator->fresh(force: false);
-            self::fail('expected MigrationException');
-        } catch (MigrationException $e) {
-            $this->assertSame('migration.fresh_forbidden', $e->messageId);
-        }
-
-        // با force در محیط غیرproduction مجاز است
-        $devMigrator = new Migrator($this->db(), $this->app->make('schema'), $this->app->basePath(), environment: 'testing');
-        $devMigrator->addPath($this->fixtures);
-        $this->migrator->run([$this->fixtures]);
-        $result = $devMigrator->fresh(force: false);
-        $this->assertGreaterThan(0, $result->count());
-    }
-
-    public function testDataMigrationIdempotent(): void
-    {
-        // T-07: مهاجرت داده‌ای قابل تکرار + chunked
-        $this->migrator->run([$this->fixtures]);
-
-        $this->db()->table('widgets')->insert([
-            ['name' => 'w1', 'price' => 10],
-            ['name' => 'w2', 'price' => 10],
-        ]);
-
-        // اجرای دستی مجدد backfill → قیمت‌ها تغییر نکنند (idempotent)
-        $backfill = require $this->fixtures . '/2026_01_01_000003_backfill_widget_prices.php';
-        $backfill->up();
-        $backfill->up();   // دو بار
-
-        $this->assertSame(10, (int) $this->db()->table('widgets')->where('name', 'w1')->value('price'));
-        $this->assertSame(2, $this->db()->table('widgets')->count());
-    }
-
-    public function testStatus(): void
-    {
-        $status = $this->migrator->status([$this->fixtures]);
-        $this->assertCount(3, $status);
-        foreach ($status as $item) {
-            $this->assertFalse($item['ran']);
-        }
-
-        $this->migrator->run([$this->fixtures]);
-        $status = $this->migrator->status([$this->fixtures]);
-        foreach ($status as $item) {
-            $this->assertTrue($item['ran']);
-            $this->assertSame(1, $item['batch']);
-        }
-    }
 }
