@@ -7,18 +7,18 @@ namespace Tavaan\Engine\Database\Migration\Console;
 use Tavaan\Core\Contracts\Console\CommandInterface;
 
 /**
- * migrate:fresh command.
+ * migrate:rollback command.
  */
-final class Migrate_freshCommand implements CommandInterface
+final class MigrateRollbackCommand implements CommandInterface
 {
     public function name(): string
     {
-        return 'migrate:fresh';
+        return 'migrate:rollback';
     }
 
     public function description(): string
     {
-        return 'Run migrate:fresh (TODO: fill description).';
+        return 'Run migrate:rollback (TODO: fill description).';
     }
 
     public function handle(array $args = []): int

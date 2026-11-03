@@ -9,7 +9,7 @@ use Tavaan\Core\Contracts\Console\CommandInterface;
 /**
  * migrate:refresh command.
  */
-final class Migrate_refreshCommand implements CommandInterface
+final class MigrateRefreshCommand implements CommandInterface
 {
     public function name(): string
     {

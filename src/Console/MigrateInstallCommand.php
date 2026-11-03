@@ -7,18 +7,18 @@ namespace Tavaan\Engine\Database\Migration\Console;
 use Tavaan\Core\Contracts\Console\CommandInterface;
 
 /**
- * migrate:status command.
+ * migrate:install command.
  */
-final class Migrate_statusCommand implements CommandInterface
+final class MigrateInstallCommand implements CommandInterface
 {
     public function name(): string
     {
-        return 'migrate:status';
+        return 'migrate:install';
     }
 
     public function description(): string
     {
-        return 'Run migrate:status (TODO: fill description).';
+        return 'Run migrate:install (TODO: fill description).';
     }
 
     public function handle(array $args = []): int

@@ -7,18 +7,18 @@ namespace Tavaan\Engine\Database\Migration\Console;
 use Tavaan\Core\Contracts\Console\CommandInterface;
 
 /**
- * migrate:install command.
+ * migrate:fresh command.
  */
-final class Migrate_installCommand implements CommandInterface
+final class MigrateFreshCommand implements CommandInterface
 {
     public function name(): string
     {
-        return 'migrate:install';
+        return 'migrate:fresh';
     }
 
     public function description(): string
     {
-        return 'Run migrate:install (TODO: fill description).';
+        return 'Run migrate:fresh (TODO: fill description).';
     }
 
     public function handle(array $args = []): int
