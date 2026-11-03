@@ -77,17 +77,23 @@ final class MigrationServiceProvider
     public function getMigrator(): Migrator { if ($this->migrator === null) $this->register(); return $this->migrator; }
 
     /**
-     * fresh
+     * fresh — drop all migrations and re-run.
      */
-    public function fresh()
+    public function fresh(): array
     {
-        return static::find($this->getKey());
+        $this->getMigrator()->getRepository()->clear();
+        return $this->getMigrator()->run();
     }
     /**
-     * install
+     * install — register all migration files and run them.
+     * @param array<int, Migration> $migrations
      */
-    public function install()
+    public function install(array $migrations = []): array
     {
-        return null;
+        $migrator = $this->getMigrator();
+        foreach ($migrations as $migration) {
+            $migrator->getRepository()->add($migration);
+        }
+        return $migrator->run();
     }
 }
