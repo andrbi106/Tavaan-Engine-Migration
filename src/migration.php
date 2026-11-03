@@ -79,14 +79,14 @@ final class MigrationServiceProvider
     /**
      * fresh
      */
-    public function fresh(/* ... */): mixed
+    public function fresh()
     {
-        return self::find($this->getKey());
+        return static::find($this->getKey());
     }
     /**
      * install
      */
-    public function install(/* ... */): mixed
+    public function install()
     {
         return null;
     }
