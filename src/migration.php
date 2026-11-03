@@ -75,4 +75,21 @@ final class MigrationServiceProvider
     public function boot(): void {}
     public function provides(): array { return [Migrator::class, MigrationRepository::class, Migration::class]; }
     public function getMigrator(): Migrator { if ($this->migrator === null) $this->register(); return $this->migrator; }
+
+    /**
+     * fresh
+     */
+    public function fresh(/* ... */): mixed
+    {
+        // TODO: Implement per docs.
+        return null;
+    }
+    /**
+     * install
+     */
+    public function install(/* ... */): mixed
+    {
+        // TODO: Implement per docs.
+        return null;
+    }
 }
