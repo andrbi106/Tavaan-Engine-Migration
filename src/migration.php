@@ -81,8 +81,7 @@ final class MigrationServiceProvider
      */
     public function fresh(/* ... */): mixed
     {
-        // TODO: Implement per docs.
-        return null;
+        return self::find(\$this->getKey());
     }
     /**
      * install
