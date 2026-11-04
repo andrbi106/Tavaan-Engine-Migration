@@ -38,5 +38,6 @@
   ],
   "facade": null,
   "docs": "docs/03-engines/migration.md",
-  "notes": "Migrator در engines/database/src/Migration (namespace مطابق DOC-049)؛ دستورات CLI در src/Console."
+  "notes": "Migrator در engines/database/src/Migration (namespace مطابق DOC-049)؛ دستورات CLI در src/Console.",
+  "class": "Tavaan\\Engine\\Database\\Migration\\MigrationEngine"
 }

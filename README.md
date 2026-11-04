@@ -2,6 +2,8 @@
 
 > **مهاجرت دیتابیس** — موتور Migration در فریمورک تَوان
 
+این موتور از کلاس پایهٔ `Engine` (در [Tavaan-Engine-Core](https://github.com/andrbi106/Tavaan-Engine-Core)) ارث می‌برد.
+
 ## مشخصات
 
 | فیلد | مقدار |
@@ -11,33 +13,49 @@
 | عنوان فارسی | مهاجرت دیتابیس |
 | نسخه | `0.1.0` |
 | namespace | `Tavaan\Engine\Database\Migration` |
-| نوع | `engine` |
+| کلاس موتور | `Tavaan\Engine\Database\Migration\MigrationEngine` |
+
+## کلاس موتور
+
+```php
+namespace Tavaan\Engine\Database\Migration;
+
+use Tavaan\EngineCore\Engine as BaseEngine;
+use Tavaan\EngineCore\Contracts\EngineManifestInterface;
+
+final class MigrationEngine extends BaseEngine
+{
+    public function __construct(EngineManifestInterface $manifest)
+    {
+        parent::__construct($manifest);
+    }
+
+    public function register(ContainerInterface $container): void
+    {
+        parent::register($container);
+        // bindingهای اختصاصی موتور
+    }
+
+    public function boot(): void
+    {
+        parent::boot();
+    }
+}
+```
+
+**فایل:** `src/MigrationEngine.php`
 
 ## توضیحات
 
 Migrator در engines/database/src/Migration (namespace مطابق DOC-049)؛ دستورات CLI در src/Console.
 
-## کلاس‌های اصلی
+## وابستگی‌ها
 
-- `src/Console/MigrateCommand.php`
-- `src/Console/MigrateFreshCommand.php`
-- `src/Console/MigrateInstallCommand.php`
-- `src/Console/MigrateRefreshCommand.php`
-- `src/Console/MigrateRollbackCommand.php`
-- `src/Console/MigrateStatusCommand.php`
-- `src/migration.php`
+**موتورهای مورد‌نیاز:** `database`, `schema`, `console`
 
 ## Service Providerها
 
 - `Tavaan\Engine\Database\Migration\MigratorServiceProvider`
-
-## وابستگی‌ها
-
-**موتورهای مورد‌نیاز:**
-
-- `database`
-- `schema`
-- `console`
 
 ## جداول دیتابیس
 
@@ -52,28 +70,19 @@ Migrator در engines/database/src/Migration (namespace مطابق DOC-049)؛ د
 - `migrate:refresh`
 - `migrate:install`
 
-## پیکربندی
+## سه درگاه ارتباط با سایر موتورها
 
-- فایل پیکربندی: `None`
-- کلید: `None`
+| درگاه | الگو | متدهای convenience |
+|---|---|---|
+| Container | pull-based DI | `make()`, `bound()` |
+| Events | pub/sub | `dispatch()`, `listen()` |
+| EngineBus | point-to-point RPC | `call()`, `offer()` |
 
 ## نصب
 
 ```bash
 git clone https://github.com/andrbi106/Tavaan-Engine-Migration.git
 ```
-
-این موتور بخشی از فریمورک تَوان است و معمولاً به‌صورت مستقیم نصب نمی‌شود،
-بلکه توسط [Tavaan-Core](https://github.com/andrbi106/Tavaan-Core) مدیریت می‌شود.
-
-## روابط با سایر مخازن
-
-| مخزن | نقش |
-|---|---|
-| **`andrbi106/Tavaan-Engine-Migration`** (این مخزن) | موتور Migration |
-| `andrbi106/Tavaan-Engine-Core` | ساختار پایه + درگاه ارتباط موتورها |
-| `andrbi106/Tavaan-Core` | اسکلت اپلیکیشن + همهٔ موتورها |
-| `Derogaramin/Tavaan-Framework` | فریمورک مادر (monorepo) |
 
 ## مجوز
 
