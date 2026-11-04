@@ -11,7 +11,7 @@
     }
   },
   "providers": [
-    "Tavaan\\Engine\\Database\\Migration\\MigratorServiceProvider"
+    "Tavaan\\Engine\\Database\\Migration\\MigrationServiceProvider"
   ],
   "requires": {
     "php": ">=8.2",
